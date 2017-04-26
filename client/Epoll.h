@@ -19,7 +19,8 @@ struct timeval startval;
 struct timeval endval;
 
 //std::string filename = "../../../Downloads/victory.ts";
-std::string filename = "Md5.h";
+//std::string filename = "Md5.h";
+std::string filename = "/home/riozhang/Downloads/victory.ts";
 //std::string filename = "/home/riozhang/Downloads/cpp.zip";
 void do_epoll(int connectfd, char *buf, FILE *fp);
 
@@ -123,7 +124,6 @@ void do_write(int epollfd, int fd, char *buf, FILE *fp){
 
         std::string endFileMsg = "7E4511117E";
         sendCmd(fd, endFileMsg.c_str(), endFileMsg.size(), 0);
-        sendCmd(fd, endFileMsg.c_str(), endFileMsg.size(), 0);
         fclose(fp);
         close(fd);
         std::cout << "makefile Md5 = " << md5file(filename.c_str()) << std::endl;
@@ -141,7 +141,6 @@ void do_write(int epollfd, int fd, char *buf, FILE *fp){
 
         std::string endFileMsg = "7E4511117E";
         sendCmd(fd, endFileMsg.c_str(), endFileMsg.size(), 0);
-        sendCmd(fd, endFileMsg.c_str(), endFileMsg.size(), 0);
 
         fclose(fp);
         close(fd);
@@ -150,7 +149,7 @@ void do_write(int epollfd, int fd, char *buf, FILE *fp){
     }
     else{
 #ifdef DELAY
-        usleep(10);
+//        usleep(10);
 #endif /*DELAY*/
         sendMsg(fd, buf, fileBlockLen, 0);
         modify_event(epollfd, fd, EPOLLIN);

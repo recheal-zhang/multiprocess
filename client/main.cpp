@@ -56,9 +56,6 @@ int listenInit(){
     serverAddr.sin_port = htons(PORT);
     inet_pton(AF_INET, IP, &serverAddr.sin_addr);
 
-    //TODO:设置为非阻塞
-//    int flags = fcntl(sockfd, F_GETFL, 0);
-//    fcntl(sockfd, F_SETFL, flags | O_NONBLOCK);
 
 
     int con = connect(sockfd, (struct sockaddr *)&serverAddr, sizeof(serverAddr));
@@ -71,6 +68,10 @@ int listenInit(){
     }
 
     int len = sizeof(unsigned int);
+    //TODO:设置为非阻塞
+    int flags = fcntl(sockfd, F_GETFL, 0);
+    fcntl(sockfd, F_SETFL, flags | O_NONBLOCK);
+
     setsockopt(sockfd, SOL_SOCKET, SO_KEEPALIVE, &optval, len);
     setsockopt(sockfd, IPPROTO_TCP, TCP_NODELAY, &optval, len);
 

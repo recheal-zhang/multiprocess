@@ -85,7 +85,7 @@ void Epoll::handleEvents(int eventNum, int listenfd){
                 //read from shmFromMaster
                 SBufferNode *node =
                     _shmFromMaster->workerRecvData();
-                std::cout << (node->cliMsg).msg << std::endl;
+ //               std::cout << (node->cliMsg).msg << std::endl;
                 //TODO:zhuanfa
                 _shmToMaster->workerSendData(node);
 

@@ -45,12 +45,12 @@ int main(){
     }
 
     //master: create share memory to worker
-    CShareMemory shmToWorker;
-    shmToWorker.createShareMem();
+    CShareMemory shmWorker;
+    shmWorker.createShareMem();
 
     //master: create share memory from worker
-    CShareMemory shmFromWorker;
-    shmFromWorker.createShareMem();
+//    CShareMemory shmFromWorker;
+//    shmFromWorker.createShareMem();
 
     //sock connect with server2
     SockConnector *sockConnectorInstance =
@@ -69,9 +69,9 @@ int main(){
     epollController.addFifoFdToClient(fifoFdFromClient,
             fifoFdToClient);
     epollController.addShmToWorkerInfo(fifoFdFromClient,
-            &shmToWorker);
+            &shmWorker);
     epollController.addShmFromWorkerInfo(fifoFdFromClient,
-            &shmFromWorker);
+            &shmWorker);
     epollController.getSockAcceptorInfo(&sockAcceptor);
     epollController.getSockConnectorInfo(sockConnectorInstance);
 

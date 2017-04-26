@@ -195,6 +195,12 @@ void do_read(int epollfd, int fd, threadMsg *buf){
 //        char bufMsg[buf->cliMsg.length];
 //        memcpy(bufMsg, buf->cliMsg.msg, buf->cliMsg.length);
         std::string tempMsg = std::string(buf->cliMsg.msg);
+
+        threadMsg ret;
+        ret.cliMsg.clientAcceptFd = buf->cliMsg.clientAcceptFd;
+        ret.cliMsg.length = 0;
+        ret.svrProMsg.serverConnectFd = buf->svrProMsg.serverConnectFd;
+        ret.event = buf->event;
         std::size_t found = tempMsg.find("7E4500007E");
         if(found != std::string::npos){ //touch file cmd
 
@@ -216,9 +222,11 @@ void do_read(int epollfd, int fd, threadMsg *buf){
                     O_WRONLY | O_CREAT | O_TRUNC,
                     S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
             std::cout << "openfile" << std::endl;
+            ret.svrProMsg.serverMd5Result = true;
         }
         else if((found = tempMsg.find("7E4511117E"))
                 != std::string::npos){
+            std::cout << "closefile" << std::endl;
             if(gFile[buf->cliMsg.clientAcceptFd] != 0){
                 fclose(gFile[buf->cliMsg.clientAcceptFd]);
                 gFile[buf->cliMsg.clientAcceptFd] = 0;
@@ -230,19 +238,25 @@ void do_read(int epollfd, int fd, threadMsg *buf){
                 std::string filename = fdStr + ".temp";
                 std::cout << "file's Md5 = " <<
                     md5file(filename.c_str()) << std::endl;
+                ret.svrProMsg.serverMd5Result = true;
             }
         }
         else{
 //            std::cout << buf->cliMsg.msg;
-            if(gFile[buf->cliMsg.clientAcceptFd] !=0)
+            if(gFile[buf->cliMsg.clientAcceptFd] !=0){
                 Util::writeMsgToFile(gFile[buf->cliMsg.clientAcceptFd],
                         buf->cliMsg.msg,
                         buf->cliMsg.length);
+
+                ret.svrProMsg.serverMd5Result = true;
+            }
             else{
                 std::cout << "gFile not create" << std::endl;
+                ret.svrProMsg.serverMd5Result = false;
             }
         }
-        modify_event(epollfd, fd, EPOLLOUT);
+//        modify_event(epollfd, fd, EPOLLOUT);
+        write(fd, &ret, sizeof(threadMsg));
     }
 }
 

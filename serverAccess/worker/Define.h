@@ -16,8 +16,8 @@
 #define FIFO_PATH "/tmp/fifo"
 
 /*Worker1 key*/
-#define WORKER_1_KEY 1234
-#define MASTER_1_KEY 1034
+#define WORKER_1_KEY 1111
+#define MASTER_1_KEY 1211
 
 
 #endif /*_DEFINE_H_*/

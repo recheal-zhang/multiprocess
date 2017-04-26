@@ -100,6 +100,18 @@ void Epoll::handleEvents(int eventNum, int listenfd){
 #ifdef ACK
                     //TODO:add signal and mutex
 //                    modifyEvent(fd, EPOLLOUT);
+                    if((_Msg.svrProMsg).serverMd5Result == true){
+                        char msg[5] = "true";
+                        CUtil::writeMsgToSock((_Msg.cliMsg).clientAcceptFd,
+                                msg,
+                                5);
+                    }
+                    else{
+                        char msg[6] = "false";
+                        CUtil::writeMsgToSock((_Msg.cliMsg).clientAcceptFd,
+                                msg,
+                                6);
+                    }
 #endif/*ACK*/
                 }
                 bzero(&_Msg, sizeof(SBufferNode));
@@ -115,7 +127,6 @@ void Epoll::handleEvents(int eventNum, int listenfd){
                 //come from client FIFO
                 bzero(buf, RECVMAXSIZE);
                 CUtil::readMsgFromFifo(fd, buf, RECVMAXSIZE);
-                std::cout << buf << std::endl;
                 bzero(buf, RECVMAXSIZE);
 
                 //read from shmFromWorker
@@ -130,9 +141,6 @@ void Epoll::handleEvents(int eventNum, int listenfd){
 
                 //Write to sockconnector
                 int server2fd = (node->svrProMsg).serverConnectFd;
-                std::cout << "msg : "
-                    << (node->cliMsg).msg
-                    << std::endl;
                 CUtil::writeMsgToSock(server2fd, node,
                         sizeof(SBufferNode));
 
@@ -165,7 +173,7 @@ void Epoll::handleEvents(int eventNum, int listenfd){
                     tempMsg.svrProMsg.serverMd5Result = true;
                     tempMsg.event = events[i];
 
-                    std::cout << tempMsg.cliMsg.msg << std::endl;
+//                    std::cout << tempMsg.cliMsg.msg << std::endl;
 
                     int index = fd % _fifoFdFromClientVec.size();
                     int svFifoFdFromWorker = _fifoFdFromClientVec[index];
@@ -176,9 +184,9 @@ void Epoll::handleEvents(int eventNum, int listenfd){
                             msg,
                             5);
 
-#ifdef ACK
-                    modifyEvent(fd, EPOLLOUT);
-#endif /*ACK*/
+//#ifdef ACK
+//                    modifyEvent(fd, EPOLLOUT);
+//#endif /*ACK*/
 
                 }
             }

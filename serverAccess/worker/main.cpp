@@ -35,14 +35,14 @@ int main(){
                 fifoServerName.c_str()));
 
     //worker: create share memory to master
-    CShareMemory shmToMaster;
-    shmToMaster.createShareMem();
-    workerEpoll.addShmToMasterInfo(&shmToMaster);
+    CShareMemory shmMaster;
+    shmMaster.createShareMem();
+    workerEpoll.addShmToMasterInfo(&shmMaster);
 
     //worker: create share memory from master
-    CShareMemory shmFromMaster;
-    shmFromMaster.createShareMem();
-    workerEpoll.addShmFromMasterInfo(&shmFromMaster);
+//    CShareMemory shmFromMaster;
+//    shmFromMaster.createShareMem();
+    workerEpoll.addShmFromMasterInfo(&shmMaster);
 
 
     workerEpoll.monitor();
