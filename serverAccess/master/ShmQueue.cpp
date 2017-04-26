@@ -31,6 +31,7 @@ bool CShmQueue::enqueue(SBufferNode *node){
     if(isFull()){
         return false;
     }
+
     memcpy(&_queue[rear],
             node,
             sizeof(SBufferNode));

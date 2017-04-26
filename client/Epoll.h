@@ -18,8 +18,9 @@
 struct timeval startval;
 struct timeval endval;
 
-std::string filename = "../../../Downloads/victory.ts";
-//std::string filename = "Md5.h";
+//std::string filename = "../../../Downloads/victory.ts";
+std::string filename = "Md5.h";
+//std::string filename = "/home/riozhang/Downloads/cpp.zip";
 void do_epoll(int connectfd, char *buf, FILE *fp);
 
 void handle_events(int epollfd, struct epoll_event *events,
@@ -122,6 +123,7 @@ void do_write(int epollfd, int fd, char *buf, FILE *fp){
 
         std::string endFileMsg = "7E4511117E";
         sendCmd(fd, endFileMsg.c_str(), endFileMsg.size(), 0);
+        sendCmd(fd, endFileMsg.c_str(), endFileMsg.size(), 0);
         fclose(fp);
         close(fd);
         std::cout << "makefile Md5 = " << md5file(filename.c_str()) << std::endl;
@@ -138,6 +140,7 @@ void do_write(int epollfd, int fd, char *buf, FILE *fp){
         cout << "time cost : " << time << endl;
 
         std::string endFileMsg = "7E4511117E";
+        sendCmd(fd, endFileMsg.c_str(), endFileMsg.size(), 0);
         sendCmd(fd, endFileMsg.c_str(), endFileMsg.size(), 0);
 
         fclose(fp);

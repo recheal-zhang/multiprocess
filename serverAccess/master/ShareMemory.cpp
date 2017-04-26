@@ -71,6 +71,9 @@ bool CShareMemory::ctlDeleteShareMem(){
 bool CShareMemory::svrSendData(SBufferNode *node){
     if(node == NULL ||
             _bufferManager == NULL){
+#ifdef DEBUG
+        std::cout << "node is NULL" << std::endl;
+#endif /*DEBUG*/
         return false;
     }
     _bufferManager->_svrSendQueue.enqueue(node);

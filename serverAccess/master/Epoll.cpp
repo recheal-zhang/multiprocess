@@ -165,12 +165,14 @@ void Epoll::handleEvents(int eventNum, int listenfd){
                     tempMsg.svrProMsg.serverMd5Result = true;
                     tempMsg.event = events[i];
 
-                    _shmToWorkerMap[fd]->svrSendData(&tempMsg);
+                    std::cout << tempMsg.cliMsg.msg << std::endl;
 
-
+                    int index = fd % _fifoFdFromClientVec.size();
+                    int svFifoFdFromWorker = _fifoFdFromClientVec[index];
+                    _shmToWorkerMap[svFifoFdFromWorker]->svrSendData(&tempMsg);
 
                     char msg[5] = "0000";
-                    CUtil::writeMsgToFifo(_fifoMap[fd],
+                    CUtil::writeMsgToFifo(_fifoMap[svFifoFdFromWorker],
                             msg,
                             5);
 
