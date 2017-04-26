@@ -8,6 +8,7 @@
 
 #include "BufferManager.h"
 #include "ShmQueue.h"
+#include "DefineVal.h"
 
 class CShareMemory{
     public:

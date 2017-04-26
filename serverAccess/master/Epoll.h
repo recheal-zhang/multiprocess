@@ -16,6 +16,7 @@
 #include "SOCKAcceptor.h"
 #include "DefineVal.h"
 #include "ShareMemory.h"
+#include "SockConnector.h"
 
 class Util;
 class SOCKAcceptor;
@@ -29,6 +30,7 @@ class Epoll : public NonCopyable{
         void addShmFromWorkerInfo(int, CShareMemory *);
 
         void getSockAcceptorInfo(SOCKAcceptor *sockAcceptor);
+        void getSockConnectorInfo(SockConnector *sockConnector);
         void monitor();
 
         void addEvent(const int &fd, const int &state);
@@ -48,6 +50,8 @@ class Epoll : public NonCopyable{
         struct epoll_event events[EPOLLEVENTS];
         char buf[RECVMAXSIZE];
         int _sockfd;
+
+        struct SBufferNode _Msg;
 
         std::vector<int> _fifoFdFromClientVec;
         //first is fdFromClient, second is fdToClient

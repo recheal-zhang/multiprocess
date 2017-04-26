@@ -36,7 +36,7 @@ struct serverProcessMsg{
     bool serverMd5Result;
 };
 
-struct threadMsg{
+struct SBufferNode{
     int epollfd;
 //    char *buf;
     struct clientMsg cliMsg;

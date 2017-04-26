@@ -85,16 +85,9 @@ void Epoll::handleEvents(int eventNum, int listenfd){
                 //read from shmFromMaster
                 SBufferNode *node =
                     _shmFromMaster->workerRecvData();
-                if(node != NULL){
-                    std::cout << node->data << std::endl;
-                }
-
-                //write to shmToMaster
-                SBufferNode tmpNode;
-                tmpNode.dataLen = 0;
-                char data[5] = "1111";
-                memcpy(tmpNode.data, data, 5);
-                _shmToMaster->workerSendData(&tmpNode);
+                std::cout << (node->cliMsg).msg << std::endl;
+                //TODO:zhuanfa
+                _shmToMaster->workerSendData(node);
 
                 char msg[5] = "1234";
                 CUtil::writeMsgToFifo(_fifoFdToServer, msg, 5);

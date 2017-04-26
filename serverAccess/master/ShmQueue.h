@@ -7,11 +7,12 @@
 #define _SHMQUEUE_H_
 
 #include "Define.h"
+#include "DefineVal.h"
 
-struct SBufferNode{
-    short dataLen;
-    char data[MAX_NODE_DATA_SIZE];
-};
+//struct SBufferNode{
+//    short dataLen;
+//    char data[MAX_NODE_DATA_SIZE];
+//};
 
 
 class CShmQueue{

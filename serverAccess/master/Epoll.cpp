@@ -50,6 +50,10 @@ void Epoll::getSockAcceptorInfo(SOCKAcceptor *sockAcceptor){
     memset(buf, 0, RECVMAXSIZE);
 }
 
+void Epoll::getSockConnectorInfo(SockConnector *sockConnector){
+    addEvent(sockConnector->_sockfd, EPOLLIN);
+}
+
 void Epoll::addFifoFdFromClient(int fifoFd){
     addEvent(fifoFd, EPOLLIN | EPOLLET);
     _fifoFdFromClientVec.push_back(fifoFd);
@@ -78,12 +82,28 @@ void Epoll::handleEvents(int eventNum, int listenfd){
             deleteEvent(fd, EPOLLIN);
         }
         else if(events[i].events & EPOLLIN){
-            //----------------------------------------
-            //if the msg come from server2
-            //TODO: Md5
             if(fd == SockConnector::_sockfd){
-                //TODO:read, write into shareMemory
-                //and send msg to worker via fifo
+                int nread;
+                //send it to thread which send msg to client
+                if((nread = read(fd, &_Msg, sizeof(SBufferNode))) < 0){
+#ifdef DEBUG
+                    std::cout << "read error from server2 "  << std::endl;
+#endif /*DEBUG*/
+                    close(fd);
+                    deleteEvent(fd, EPOLLIN);
+                }
+                else if(nread == 0){
+                    close(fd);
+                    deleteEvent(fd, EPOLLIN);
+                }
+                else{
+#ifdef ACK
+                    //TODO:add signal and mutex
+//                    modifyEvent(fd, EPOLLOUT);
+#endif/*ACK*/
+                }
+                bzero(&_Msg, sizeof(SBufferNode));
+
             }
             else if(fd == listenfd){
                 handleAccept(listenfd);
@@ -101,34 +121,84 @@ void Epoll::handleEvents(int eventNum, int listenfd){
                 //read from shmFromWorker
                 SBufferNode *node =
                     _shmFromWorkerMap[fd]->svrRecvData();
-                if(node != NULL){
-                    std::cout << node->data << std::endl;
+                if(node == NULL){
+#ifdef DEBUG
+                    std::cout << "cannot recv data from worker"
+                        << std::endl;
+#endif /*DEBUG*/
                 }
 
-                //write to shmToWorker
-                SBufferNode tmpNode;
-                tmpNode.dataLen = 1;
-                char data[5] = "2222";
-                memcpy(tmpNode.data, data, 5);
-                _shmToWorkerMap[fd]->svrSendData(&tmpNode);
-
-
-
-                char msg[5] = "0000";
-                std::cout << "_fifoMap[" << fd << "]="
-                    <<_fifoMap[fd] << std::endl;
-                CUtil::writeMsgToFifo(_fifoMap[fd],
-                        msg,
-                        5);
+                //Write to sockconnector
+                int server2fd = (node->svrProMsg).serverConnectFd;
+                std::cout << "msg : "
+                    << (node->cliMsg).msg
+                    << std::endl;
+                CUtil::writeMsgToSock(server2fd, node,
+                        sizeof(SBufferNode));
 
             }
-            else{
-                //TODO: if(fd == fifo's fd) ?
+            else{//if the msg come from client
+                //struct it and send it to server2
+                int nread;
+                if((nread = read(fd, buf, RECVMAXSIZE)) < 0){
+#ifdef DEBUG
+                    std::cout << "read error from client" << std::endl;
+#endif /*DEBUG*/
+                    close(fd);
+                    deleteEvent(fd, EPOLLIN);
+                }
+                else if(nread == 0){//same as EPOLLRDHUP
+                    close(fd);
+                    deleteEvent(fd, EPOLLIN);
+                }
+                else{
+                    //write to shmToWorker
+                    SBufferNode tempMsg;
+                    tempMsg.epollfd = _epollfd;
+                    tempMsg.cliMsg.clientAcceptFd = fd;
+                    bzero(tempMsg.cliMsg.msg, RECVMAXSIZE);
+                    memcpy(tempMsg.cliMsg.msg, buf, nread);
+                    tempMsg.cliMsg.length = nread;
+                    tempMsg.svrProMsg.serverConnectFd
+                        = SockConnector::_sockfd;
+    //               tempMsg.svrProMsg.md5Result = true;
+                    tempMsg.svrProMsg.serverMd5Result = true;
+                    tempMsg.event = events[i];
+
+                    _shmToWorkerMap[fd]->svrSendData(&tempMsg);
+
+
+
+                    char msg[5] = "0000";
+                    CUtil::writeMsgToFifo(_fifoMap[fd],
+                            msg,
+                            5);
+
+#ifdef ACK
+                    modifyEvent(fd, EPOLLOUT);
+#endif /*ACK*/
+
+                }
             }
         }
 
         else if(events[i].events & EPOLLOUT){
-            //TODO:
+            //just come from client
+            int nwrite;
+            std::string ack = "7E457E";
+            if((nwrite = write(fd, ack.c_str(),
+                            ack.size())) < 0){
+#ifdef DEBUG
+                std::cout << "write error in epoll"
+                    << std::endl;
+#endif /*DEBUG*/
+                deleteEvent(fd, EPOLLOUT);
+                close(fd);
+            }
+            else{
+                //TODO:limit flow module
+                modifyEvent(fd, EPOLLIN);
+            }
         }
 
         else if((events[i].events & EPOLLERR) ){

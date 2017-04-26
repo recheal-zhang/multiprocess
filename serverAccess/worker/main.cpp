@@ -44,17 +44,6 @@ int main(){
     shmFromMaster.createShareMem();
     workerEpoll.addShmFromMasterInfo(&shmFromMaster);
 
-    //send msg to master
-    SBufferNode tmpNode;
-    tmpNode.dataLen = 0;
-    char data[5] = "1111";
-    memcpy(tmpNode.data, data, 5);
-    shmToMaster.workerSendData(&tmpNode);
-
-    char msg[5] = "1234";
-    CUtil::writeMsgToFifo(fd, msg, 5);
-
-
 
     workerEpoll.monitor();
     return 0;

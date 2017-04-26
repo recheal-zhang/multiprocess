@@ -6,9 +6,13 @@
 #include "Epoll.h"
 #include "Util.h"
 #include "Define.h"
+#include "DefineVal.h"
 #include "Fifo.h"
 #include "ShareMemory.h"
 #include "ShmQueue.h"
+#include "SockConnector.h"
+#include "SOCKAcceptor.h"
+#include "INETAddr.h"
 
 
 using namespace std;
@@ -48,6 +52,18 @@ int main(){
     CShareMemory shmFromWorker;
     shmFromWorker.createShareMem();
 
+    //sock connect with server2
+    SockConnector *sockConnectorInstance =
+        SockConnector::getInstance();
+    sockConnectorInstance->sockConnect(
+            SVRADDRESS,
+            SVRPORT);
+
+    //sock listen & accept
+    INETAddr inetAddr(IPADDRESS, PORT);
+    SOCKAcceptor sockAcceptor;
+    sockAcceptor.sockBindListen();
+
     //epoll add info
     epollController.addFifoFdFromClient(fifoFdFromClient);
     epollController.addFifoFdToClient(fifoFdFromClient,
@@ -56,6 +72,8 @@ int main(){
             &shmToWorker);
     epollController.addShmFromWorkerInfo(fifoFdFromClient,
             &shmFromWorker);
+    epollController.getSockAcceptorInfo(&sockAcceptor);
+    epollController.getSockConnectorInfo(sockConnectorInstance);
 
     epollController.monitor();
 
