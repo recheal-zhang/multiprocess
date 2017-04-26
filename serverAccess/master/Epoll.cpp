@@ -4,6 +4,7 @@
  * */
 
 #include <iostream>
+#include <utility>
 
 #include <string.h>
 #include <unistd.h>
@@ -14,6 +15,7 @@
 #include "SockConnector.h"
 
 #include "DefineVal.h"
+#include "ShmQueue.h"
 
 Epoll::Epoll():
     _epollfd(epoll_create(FDSIZE))
@@ -28,6 +30,17 @@ int Epoll::getEpollfd() const{
     return _epollfd;
 }
 
+void Epoll::addShmToWorkerInfo(int fifoFdFromClient,
+        CShareMemory *shmToWorker){
+    _shmToWorkerMap.insert(std::make_pair(fifoFdFromClient,
+                shmToWorker));
+}
+
+void Epoll::addShmFromWorkerInfo(int fifoFdFromClient,
+        CShareMemory *shmFromWorker){
+    _shmFromWorkerMap.insert(std::make_pair(fifoFdFromClient,
+                shmFromWorker));
+}
 
 void Epoll::getSockAcceptorInfo(SOCKAcceptor *sockAcceptor){
     _sockAcceptor = sockAcceptor;
@@ -65,9 +78,6 @@ void Epoll::handleEvents(int eventNum, int listenfd){
             deleteEvent(fd, EPOLLIN);
         }
         else if(events[i].events & EPOLLIN){
-            //TODO: add query num
-            int nread;
-
             //----------------------------------------
             //if the msg come from server2
             //TODO: Md5
@@ -87,6 +97,22 @@ void Epoll::handleEvents(int eventNum, int listenfd){
                 CUtil::readMsgFromFifo(fd, buf, RECVMAXSIZE);
                 std::cout << buf << std::endl;
                 bzero(buf, RECVMAXSIZE);
+
+                //read from shmFromWorker
+                SBufferNode *node =
+                    _shmFromWorkerMap[fd]->svrRecvData();
+                if(node != NULL){
+                    std::cout << node->data << std::endl;
+                }
+
+                //write to shmToWorker
+                SBufferNode tmpNode;
+                tmpNode.dataLen = 1;
+                char data[5] = "2222";
+                memcpy(tmpNode.data, data, 5);
+                _shmToWorkerMap[fd]->svrSendData(&tmpNode);
+
+
 
                 char msg[5] = "0000";
                 std::cout << "_fifoMap[" << fd << "]="

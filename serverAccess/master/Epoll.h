@@ -15,13 +15,18 @@
 #include "DefineVal.h"
 #include "SOCKAcceptor.h"
 #include "DefineVal.h"
+#include "ShareMemory.h"
 
 class Util;
 class SOCKAcceptor;
+class CShareMemory;
 class Epoll : public NonCopyable{
     public:
         Epoll();
         ~Epoll();
+
+        void addShmToWorkerInfo(int, CShareMemory *);
+        void addShmFromWorkerInfo(int, CShareMemory *);
 
         void getSockAcceptorInfo(SOCKAcceptor *sockAcceptor);
         void monitor();
@@ -48,7 +53,13 @@ class Epoll : public NonCopyable{
         //first is fdFromClient, second is fdToClient
         std::map<int, int> _fifoMap;
 
+        std::map<int, CShareMemory* > _shmToWorkerMap;
+        std::map<int, CShareMemory* > _shmFromWorkerMap;
+
+
         SOCKAcceptor*_sockAcceptor;
+
+
 
 };
 

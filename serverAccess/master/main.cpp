@@ -7,6 +7,9 @@
 #include "Util.h"
 #include "Define.h"
 #include "Fifo.h"
+#include "ShareMemory.h"
+#include "ShmQueue.h"
+
 
 using namespace std;
 
@@ -15,16 +18,14 @@ int main(){
 
     Epoll epollController;
 
-//    epollController.addFifofdFromClient(
-//            CUtil::openfileReadonlyNonblock(
-//                (CUtil::getFifoName(WORKER_1_KEY)).c_str()));
-
+    //master: get worker's fifo info
     std::string fifoClientName =
         CUtil::getFifoName(WORKER_1_KEY);
     int fifoFdFromClient =
         CUtil::openfileReadonlyNonblock(
                 fifoClientName.c_str());
 
+    //master: mkfifo to worker & open fifo
     std::string fifoServerName =
         CUtil::getFifoName(MASTER_1_KEY);
     CFifo fifoSend(fifoServerName.c_str());
@@ -39,10 +40,22 @@ int main(){
 #endif/*DEBUG*/
     }
 
-    epollController.addFifoFdFromClient(fifoFdFromClient);
+    //master: create share memory to worker
+    CShareMemory shmToWorker;
+    shmToWorker.createShareMem();
 
+    //master: create share memory from worker
+    CShareMemory shmFromWorker;
+    shmFromWorker.createShareMem();
+
+    //epoll add info
+    epollController.addFifoFdFromClient(fifoFdFromClient);
     epollController.addFifoFdToClient(fifoFdFromClient,
             fifoFdToClient);
+    epollController.addShmToWorkerInfo(fifoFdFromClient,
+            &shmToWorker);
+    epollController.addShmFromWorkerInfo(fifoFdFromClient,
+            &shmFromWorker);
 
     epollController.monitor();
 
